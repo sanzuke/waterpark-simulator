@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { PALETTE, WORLD } from "../core/config";
+import { t } from "../core/i18n";
 import { SHOPS } from "../core/economy";
 import { CharacterRig, type RigOptions } from "../player/CharacterRig";
 import type { BuildContext } from "./build-context";
@@ -87,8 +88,8 @@ export function buildEntrance(c: BuildContext) {
   addStaff(c, "seller", kx - 0.3, 0, kz, Math.PI / 2, { top: 0xffffff, shorts: 0xff6b5e, hair: 0x7a3b1e });
   c.interactables.push({
     id: "ticket-booth", x: kx + 3.2, z: kz, radius: 3.2, y: 3.3,
-    label: (g) => (g.state.ticket ? "Say Hi" : "Buy Ticket"),
-    run: (g) => { if (g.state.ticket) g.hud.toast("Your ticket is ready. Have a splashy day!"); else g.actions.openTickets(); },
+    label: (g) => t(g.state.ticket ? "Say Hi" : "Buy Ticket"),
+    run: (g) => { if (g.state.ticket) g.hud.toast(t("Your ticket is ready. Have a splashy day!")); else g.actions.openTickets(); },
   });
 
   // Info board (outside)
@@ -100,7 +101,7 @@ export function buildEntrance(c: BuildContext) {
   solidBox(c, ix, iz, 6.2, 0.6, "#ffffff");
   c.interactables.push({
     id: "info-board", x: ix, z: iz + 1.8, radius: 3, y: 4.2,
-    label: () => "Read Info Board",
+    label: () => t("Read Info Board"),
     run: (g) => g.hud.showInfo(),
   });
 
@@ -112,7 +113,7 @@ export function buildEntrance(c: BuildContext) {
   sign(c, "EXIT", 4.2, 1, PALETTE.grape, 42, 5.1, GZ + 0.7, 0);
   c.interactables.push({
     id: "exit", x: 42, z: GZ - 2.2, radius: 3, y: 3.4,
-    label: () => "Go Home",
+    label: () => t("Go Home"),
     run: (g) => g.actions.goHome(),
   });
 }
@@ -127,8 +128,8 @@ export function buildPreparation(c: BuildContext) {
   solidBox(c, -40, 42.4, 10.2, 0.9, "#ff6b5e");
   c.interactables.push({
     id: "lockers", x: -40, z: 44, radius: 3.2, y: 3,
-    label: () => "Change Clothes",
-    run: (g) => { const n = g.player.nextOutfit(); g.state.outfit = g.player.outfit; g.hud.toast(`Ta-da! New swimsuit: ${n}`); g.effects.droplets(g.player.pos.x, 1.6, g.player.pos.z, 8); g.actions.save(); },
+    label: () => t("Change Clothes"),
+    run: (g) => { const n = g.player.nextOutfit(); g.state.outfit = g.player.outfit; g.hud.toast(t("Ta-da! You brought a new swimsuit!")); g.effects.droplets(g.player.pos.x, 1.6, g.player.pos.z, 8); g.actions.save(); },
   });
   hut(c, -28, 41, 4, 2, 2.4, PALETTE.sun, PALETTE.coral, "TOWELS", 0, PALETTE.coral, "#ffd23f");
   for (let i = 0; i < 3; i++) b.box(-29 + i * 1, 1.0, 42.1, 0.8, 0.35, 0.5, [PALETTE.pink, PALETTE.aqua, PALETTE.mint][i]);
@@ -162,7 +163,7 @@ export function buildFoodCourt(c: BuildContext) {
     addStaff(c, shop.id, x + 0.9, 0, s.z, -Math.PI / 2, { top: s.col, shorts: 0xffffff, hair: [0x2a1a10, 0x6b3b1a, 0x1e1e1e, 0x8a5a2b, 0x3a2a1e][i], skin: [0xf2b790, 0xd9a07a, 0xc68a5e, 0xf2b790, 0xe8b08a][i] }, 1.25);
     c.interactables.push({
       id: `shop-${shop.id}`, x: x - 3.4, z: s.z, radius: 2.8, y: 3.6,
-      label: (g) => (g.player.busy ? null : "Buy Food"),
+      label: (g) => (g.player.busy ? null : t("Buy Food")),
       run: (g) => g.actions.openShop(shop.id),
     });
   });
@@ -182,7 +183,7 @@ export function buildFoodCourt(c: BuildContext) {
       c.seats.push(seat);
       c.interactables.push({
         id: `seat-${ti}-${side}`, x: sx, z: tz, radius: 1.3, y: 1.8,
-        label: (g) => (g.player.isSitting || g.player.busy || seat.taken ? null : "Sit Down"),
+        label: (g) => (g.player.isSitting || g.player.busy || seat.taken ? null : t("Sit Down")),
         run: (g) => g.player.sit(seat),
       });
     }
@@ -196,6 +197,7 @@ export function buildLifeguards(c: BuildContext) {
   const spots: [number, number, number][] = [
     [-15.8, 22, Math.PI / 2], [15.8, 30, -Math.PI / 2], [-19.5, 20, -Math.PI / 2], [11.8, -4, -Math.PI / 2],
     [30, 11, Math.PI], [-36, -45, Math.PI / 2], [20.5, -45, -Math.PI / 2], [38, -45, -Math.PI / 2],
+    [-37.6, 17, -Math.PI / 2],
   ];
   spots.forEach(([x, z, yaw], i) => {
     for (const dx of [-0.5, 0.5]) for (const dz of [-0.5, 0.5]) b.box(x + dx, 0, z + dz, 0.12, 2.2, 0.12, PALETTE.white);

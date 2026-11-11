@@ -3,6 +3,7 @@ import { WORLD, } from "../core/config";
 import { ENERGY } from "../core/economy";
 import type { World } from "../world/World";
 import type { Stats } from "../core/Save";
+import { t } from "../core/i18n";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -78,7 +79,7 @@ export class Hud {
     const fill = $("energy-fill");
     fill.style.width = `${Math.max(3, energy)}%`;
     fill.style.background = ["#5fd6a0", "#ffd23f", "#ff9a3d", "#ff6b5e"][tierIndex];
-    $("energy-name").textContent = ENERGY.tiers[tierIndex].name;
+    $("energy-name").textContent = t(ENERGY.tiers[tierIndex].name);
     $("energy-box").classList.toggle("low", tierIndex >= 2);
     if (this.menuCfg) $("menu-coins").textContent = String(coins);
   }
@@ -87,6 +88,12 @@ export class Hud {
     const el = $("coin-box");
     el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
   }
+
+  /** The area banner text, for tests and the language switch. */
+  get areaName() { return this.lastArea ? t(this.lastArea) : ""; }
+
+  /** Forces the next update to rewrite the area banner (used after a language switch). */
+  forceArea() { this.lastArea = ""; }
 
   /** Park clock, only rewritten when the minute changes. */
   setClock(label: string) {
@@ -105,7 +112,7 @@ export class Hud {
   /** Pause-screen sticker list: unlocked first, the rest shown faded as a hint. */
   setAchievements(entries: { icon: string; name: string; desc: string; unlocked: boolean }[]) {
     $("ach-list").innerHTML = entries
-      .map((e) => `<li class="${e.unlocked ? "" : "locked"}"><span class="icon">${e.icon}</span><div>${e.name}<small>${e.desc}</small></div></li>`)
+      .map((e) => `<li class="${e.unlocked ? "" : "locked"}"><span class="icon">${e.icon}</span><div>${t(e.name)}<small>${t(e.desc)}</small></div></li>`)
       .join("");
   }
 
@@ -148,8 +155,8 @@ export class Hud {
 
   showSummary(s: Stats, minutes: number, onStay: () => void, onHome: () => void) {
     const rows: [string, string][] = [
-      ["Swim time", `${minutes} min`], ["Slides", String(s.slides)], ["Snacks", String(s.eaten)],
-      ["Coins found", String(s.collected)], ["Coins spent", String(s.spent)],
+      [t("Swim time"), `${minutes}${t(" min")}`], [t("Slides"), String(s.slides)], [t("Snacks"), String(s.eaten)],
+      [t("Coins found"), String(s.collected)], [t("Coins spent"), String(s.spent)],
     ];
     $("summary-list").innerHTML = rows.map(([k, v]) => `<li><b>${k}</b> ${v}</li>`).join("");
     $("btn-stay").onclick = () => { $("summary").hidden = true; onStay(); };
@@ -161,7 +168,7 @@ export class Hud {
     const name = areaAt(x, z);
     if (name !== this.lastArea) {
       this.lastArea = name;
-      this.area.textContent = name;
+      this.area.textContent = t(name);
       this.area.classList.remove("hide");
       clearTimeout(this.areaTimer);
       this.areaTimer = window.setTimeout(() => this.area.classList.add("hide"), 3200);

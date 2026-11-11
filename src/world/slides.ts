@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { PALETTE } from "../core/config";
+import { t } from "../core/i18n";
 import type { BuildContext } from "./build-context";
 import { makeSign, solidBox } from "./build-context";
 import type { SlideDef } from "./SlideRide";
@@ -33,7 +34,7 @@ function addSlide(c: BuildContext, slides: SlideDef[], id: string, name: string,
   slides.push(def);
   c.interactables.push({
     id: `slide-${id}`, x, z: base.z + 1.2, radius: 2.6, y: 2.6,
-    label: (g) => (g.player.busy ? null : def.cooldown > 0 ? "Wait for your turn..." : `Ride ${name}`),
+    label: (g) => (g.player.busy ? null : def.cooldown > 0 ? t("Wait for your turn...") : t("Ride {name}", { name: t(name) })),
     run: (g) => { if (def.cooldown <= 0) g.actions.startSlide(def); },
   });
   c.animated.push((dt) => { if (def.cooldown > 0) def.cooldown -= dt; });

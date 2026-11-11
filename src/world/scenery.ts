@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { PALETTE, WORLD } from "../core/config";
+import { t } from "../core/i18n";
 import type { BuildContext } from "./build-context";
 import { WATER_BODIES } from "./layout";
 
@@ -37,7 +38,7 @@ export function lounger(c: BuildContext, x: number, z: number, i: number, paraso
   c.seats.push(seat);
   c.interactables.push({
     id: `lounger-${x}-${z}`, x, z, radius: 1.5, y: 1.6,
-    label: (g) => (g.player.isSitting || g.player.busy || seat.taken ? null : "Rest"),
+    label: (g) => (g.player.isSitting || g.player.busy || seat.taken ? null : t("Rest")),
     run: (g) => g.player.sit(seat),
   });
 }

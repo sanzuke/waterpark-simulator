@@ -28,6 +28,7 @@ const beachPool = (id: string, name: string, bounds: Rect, maxDepth: number, slo
 });
 
 const familyBounds = rect(0, 26, 28, 20);
+const waveBounds = rect(-48, 17, 20, 18);
 const ringOuter = rect(30, -6, 36, 28);
 const ringInner = rect(30, -6, 26, 18);
 
@@ -43,6 +44,15 @@ export const WATER_BODIES: WaterBody[] = [
   },
   beachPool("kids", "Children's Pool", rect(-28, 20, 14, 12), 0.6, 1.6),
   beachPool("relax", "Relaxing Pool", rect(0, -4, 20, 12), 1.4, 1.6),
+  {
+    // Wave pool: sandy beach entry on the south side, deepest at the machine.
+    id: "wave", name: "Wave Pool", bounds: waveBounds,
+    depth: (x, z) => {
+      const t = (waveBounds.maxZ - z) / (waveBounds.maxZ - waveBounds.minZ);
+      const profile = 0.4 + 1.7 * smoothstep(0.2, 0.8, t);
+      return profile * smoothstep(0, 2.6, waveBounds.maxZ - z);
+    },
+  },
   {
     id: "lazy", name: "Lazy River", bounds: ringOuter,
     depth: (x, z) => {
@@ -70,6 +80,7 @@ export const AREAS: Area[] = [
   { name: "Lazy River", rect: { minX: 10, maxX: 50, minZ: -22, maxZ: 10 } },
   { name: "Relaxing Pool", rect: { minX: -13, maxX: 13, minZ: -13, maxZ: 5 } },
   { name: "Water Playground", rect: { minX: -48, maxX: -22, minZ: -18, maxZ: 6 } },
+  { name: "Wave Pool", rect: { minX: -60, maxX: -36, minZ: 6, maxZ: 26 } },
   { name: "Water Slides", rect: { minX: -45, maxX: 45, minZ: -50, maxZ: -24 } },
 ];
 

@@ -1,4 +1,5 @@
 import { PALETTE } from "../core/config";
+import { t as tr } from "../core/i18n";
 import type { BuildContext } from "./build-context";
 import { makeSign, solidBox } from "./build-context";
 import * as THREE from "three";
@@ -35,8 +36,8 @@ export function buildPlayground(c: BuildContext, fx: Effects, hooks: BucketHooks
   });
   c.interactables.push({
     id: "fountains", x: PLAY.cx, z: PLAY.cz + 3, radius: 3.4, y: 2.2,
-    label: () => (on > 0 ? "Fountains Are On!" : "Start Fountains"),
-    run: (g) => { if (on > 0) { g.hud.toast("Run through the splashes!"); return; } on = 25; g.hud.toast("Whoosh! Fountains on for a while"); },
+    label: () => tr(on > 0 ? "Fountains Are On!" : "Start Fountains"),
+    run: (g) => { if (on > 0) { g.hud.toast(tr("Run through the splashes!")); return; } on = 25; g.hud.toast(tr("Whoosh! Fountains on for a while")); },
   });
   c.circles.push({ x: PLAY.cx, z: PLAY.cz + 3, r: 0.6 });
 
@@ -102,8 +103,8 @@ export function buildPlayground(c: BuildContext, fx: Effects, hooks: BucketHooks
   });
   c.interactables.push({
     id: "bucket", x: bx, z: bz + 3, radius: 3.2, y: 2.4,
-    label: () => (api.tipping ? "Splash!" : api.fill > 0.3 ? "Tip the Bucket!" : "Bucket is filling..."),
-    run: (g) => { if (api.tipping) return; if (api.fill > 0.3) { g.hud.toast("Here it comes... stand under it!"); api.tip(); } else g.hud.toast("Almost... let it fill a bit more"); },
+    label: () => (api.tipping ? "Splash!" : tr(api.fill > 0.3 ? "Tip the Bucket!" : "Bucket is filling...")),
+    run: (g) => { if (api.tipping) return; if (api.fill > 0.3) { g.hud.toast(tr("Here it comes... stand under it!")); api.tip(); } else g.hud.toast(tr("Almost... let it fill a bit more")); },
   });
 
   // Climbing structure

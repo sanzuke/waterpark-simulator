@@ -16,6 +16,7 @@ import { clearSave, loadSave, newStats, writeSave } from "./Save";
 import { Sfx } from "./Sfx";
 import { Clock, PARK } from "./Clock";
 import { ACHIEVEMENTS, Achievements } from "./Achievements";
+import { applyStaticTexts, getLang, t, toggleLang } from "./i18n";
 import type { GameActions, GameApi } from "../interaction/types";
 
 type State = "start" | "play" | "pause" | "info" | "menu" | "summary";
@@ -87,12 +88,12 @@ export class Game {
     this.hud.onMenuClosed = () => { if (this.state === "menu") this.setState("play"); };
 
     this.data.onChange = () => this.refreshStats();
-    this.data.onTier = (tip) => this.hud.toast(tip, 5000);
-    this.clock.onClosingSoon = () => this.hud.toast("The park closes at 17:00. Still time for one more splash!", 5000);
-    this.clock.onClosed = () => this.hud.toast("What a fun day! Visit the exit gate whenever you like.", 6000);
+    this.data.onTier = (tip) => this.hud.toast(t(tip), 5000);
+    this.clock.onClosingSoon = () => this.hud.toast(t("The park closes at 17:00. Still time for one more splash!"), 5000);
+    this.clock.onClosed = () => this.hud.toast(t("What a fun day! Visit the exit gate whenever you like."), 6000);
     this.ach.onUnlock = (a) => {
       this.data.earn(a.reward);
-      this.hud.toast(`⭐ ${a.name}! You earned ${a.reward} Water Coins.`, 4500);
+      this.hud.toast(t("⭐ {name}! You earned {reward} Water Coins.", { name: t(a.name), reward: a.reward }), 4500);
       this.hud.setStars(this.ach.unlocked.size, ACHIEVEMENTS.length, true);
       Sfx.coin();
       this.save();
@@ -103,7 +104,7 @@ export class Game {
       const p = this.player.pos;
       if (!this.player.isRiding && Math.hypot(p.x - x, p.z - z) < 3.2) {
         this.world.effects.splash(p.x, Math.max(p.y, 0) + 0.8, p.z, 1.5);
-        this.hud.toast("SPLASH! You got soaked!");
+        this.hud.toast(t("SPLASH! You got soaked!"));
         Sfx.splash(1.5);
       }
     };
@@ -122,6 +123,8 @@ export class Game {
     document.addEventListener("visibilitychange", () => { if (document.hidden) { this.save(); if (this.state === "play") this.setState("pause"); } });
     addEventListener("pagehide", () => this.save());
 
+    applyStaticTexts();
+    for (const b of Array.from(document.querySelectorAll<HTMLElement>(".btn-lang"))) b.addEventListener("click", () => this.switchLang());
     if (loadSave()) $("btn-continue").hidden = false;
     if (coarse) document.body.classList.add("touch");
     this.resetWorldState();
@@ -170,12 +173,21 @@ export class Game {
     this.refreshStats();
     this.refreshProgress();
     this.setState("play");
-    this.hud.toast(saved ? "Welcome back!" : "Buy a ticket at the booth to enter the park!", 4000);
+    this.hud.toast(saved ? t("Welcome back!") : t("Buy a ticket at the booth to enter the park!"), 4000);
   }
 
   private refreshStats() { this.hud.setStats(this.data.coins, this.data.energy, this.data.tierIndex); }
 
   /** Clock, stickers and the pause-screen list. */
+  /** English <-> Indonesian. Static HTML, HUD stats and the sticker list redraw at once. */
+  private switchLang() {
+    toggleLang();
+    applyStaticTexts();
+    this.hud.forceArea();
+    this.refreshStats();
+    this.refreshProgress();
+  }
+
   private refreshProgress() {
     this.hud.setClock(this.clock.label);
     this.hud.setStars(this.ach.unlocked.size, ACHIEVEMENTS.length);
@@ -223,19 +235,19 @@ export class Game {
   private openTickets() {
     this.setState("menu");
     this.hud.openMenu({
-      title: "Ticket Booth", subtitle: "One ticket lets you play all day!", coins: () => this.data.coins,
-      items: [{ id: "ticket", icon: "🎟️", name: "Day Ticket", desc: "Pools, slides and the whole park", price: TICKET_PRICE }],
+      title: t("Ticket Booth"), subtitle: t("One ticket lets you play all day!"), coins: () => this.data.coins,
+      items: [{ id: "ticket", icon: "🎟️", name: t("Day Ticket"), desc: t("Pools, slides and the whole park"), price: TICKET_PRICE }],
       choose: () => {
-        if (this.data.ticket) return { msg: "You already have a ticket. Off you go!" };
+        if (this.data.ticket) return { msg: t("You already have a ticket. Off you go!") };
         if (!this.data.spend(TICKET_PRICE)) {
           Sfx.no();
-          return { msg: `You need ${TICKET_PRICE - this.data.coins} more Water Coins. Shiny coins are hiding around the park!` };
+          return { msg: t("You need {n} more Water Coins. Shiny coins are hiding around the park!", { n: TICKET_PRICE - this.data.coins }) };
         }
         this.data.ticket = true;
         this.world.setGateOpen(true);
         this.world.staffById("seller")!.wave = 2;
         Sfx.buy();
-        this.hud.toast("Ticket ready! Walk through the gate.");
+        this.hud.toast(t("Ticket ready! Walk through the gate."));
         this.save();
         return { msg: "", close: true };
       },
@@ -246,22 +258,22 @@ export class Game {
     const shop = SHOPS.find((s) => s.id === id)!;
     this.setState("menu");
     this.hud.openMenu({
-      title: shop.name, subtitle: "What would you like?", coins: () => this.data.coins,
-      items: shop.menu.map((f) => ({ id: f, icon: FOODS[f].icon, name: FOODS[f].name, desc: `${FOODS[f].desc} · +${FOODS[f].energy} ⚡`, price: FOODS[f].price })),
+      title: t(shop.name), subtitle: t("What would you like?"), coins: () => this.data.coins,
+      items: shop.menu.map((f) => ({ id: f, icon: FOODS[f].icon, name: t(FOODS[f].name), desc: `${t(FOODS[f].desc)} · +${FOODS[f].energy} ⚡`, price: FOODS[f].price })),
       choose: (fid) => {
         const food = FOODS[fid as FoodId];
-        if (this.player.isEating || this.serve) return { msg: "Finish your snack first!" };
+        if (this.player.isEating || this.serve) return { msg: t("Finish your snack first!") };
         if (this.data.energy >= ENERGY.max - 0.5 && food.energy > 0) { /* still allowed: treats are fun */ }
         if (!this.data.spend(food.price)) {
           Sfx.no();
-          return { msg: `Oh! You need ${food.price - this.data.coins} more Water Coins for the ${food.name}. Look for shiny coins!` };
+          return { msg: t("Oh! You need {n} more Water Coins for the {name}. Look for shiny coins!", { n: food.price - this.data.coins, name: t(food.name) }) };
         }
         Sfx.buy();
         this.data.stats.bought++;
         this.serve = { t: 1.4, food: food.id };
         const keeper = this.world.staffById(id);
         if (keeper) keeper.work = 1.4;
-        this.hud.toast(`Preparing your ${food.name}...`);
+        this.hud.toast(t("Preparing your {name}...", { name: t(food.name) }));
         this.save();
         return { msg: "", close: true };
       },
@@ -285,7 +297,7 @@ export class Game {
       this.refreshProgress();
       this.setState("play");
       this.save();
-      this.hud.toast("See you next time! Buy a new ticket to come back.", 4000);
+      this.hud.toast(t("See you next time! Buy a new ticket to come back."), 4000);
     });
   }
 
@@ -311,10 +323,10 @@ export class Game {
     if (this.serve.t > 0) return;
     const food = FOODS[this.serve.food];
     this.serve = null;
-    this.hud.toast("Here you go! Enjoy!");
+    this.hud.toast(t("Here you go! Enjoy!"));
     this.player.eat(food, (d) => this.data.addEnergy(d), () => {
       this.data.stats.eaten++;
-      this.hud.toast(food.drink ? "Ahh, so refreshing!" : "Yum! That was tasty!");
+      this.hud.toast(t(food.drink ? "Ahh, so refreshing!" : "Yum! That was tasty!"));
       this.save();
     });
   }
@@ -342,7 +354,7 @@ export class Game {
         this.data.earn(v); this.data.stats.collected += v;
         this.hud.bumpCoins(); Sfx.coin();
         this.world.effects.droplets(x, y, z, 8);
-        this.hud.toast(`+${v} Water Coins!`, 1200);
+        this.hud.toast(t("+{n} Water Coins!", { n: v }), 1200);
       }, this.data.ticket);
       this.chewT -= dt;
       if (this.player.isEating && this.chewT <= 0) { this.chewT = 0.5; if (FOODS.water && this.api.player.isEating) Sfx.crunch(); }
@@ -353,7 +365,7 @@ export class Game {
     this.npcs.update(dt);
     this.cam.update(dt, this.player.pos, playing ? look : { dx: 0, dy: 0 });
     this.interaction.update(this.api, this.world.time);
-    if (this.player.isSitting && !this.player.isEating && playing) this.hud.setPrompt("Stand Up");
+    if (this.player.isSitting && !this.player.isEating && playing) this.hud.setPrompt(t("Stand Up"));
     if (!playing) this.hud.setPrompt(null);
 
     const p = this.player.pos;
@@ -397,12 +409,12 @@ export class Game {
     this.gateHintT -= dt;
     if (!this.data.ticket && p.z > GATE_Z && p.z < GATE_Z + 3 && Math.abs(p.x) < 5 && this.gateHintT <= 0) {
       this.gateHintT = 7;
-      this.hud.toast("The gate needs a ticket first. Visit the ticket booth!");
+      this.hud.toast(t("The gate needs a ticket first. Visit the ticket booth!"));
     }
     if (this.data.ticket && !this.welcomed && p.z < GATE_Z - 1) {
       this.welcomed = true;
       this.world.staffById("officer")!.wave = 2.5;
-      this.hud.toast("Welcome to the waterpark! Go wherever you like.", 4000);
+      this.hud.toast(t("Welcome to the waterpark! Go wherever you like."), 4000);
     }
   }
 
@@ -432,6 +444,9 @@ export class Game {
         coins: g.data.coins, energy: +g.data.energy.toFixed(1), tier: g.data.tier.name, ticket: g.data.ticket,
         stats: g.data.stats, bucket: +g.world.bucket.fill.toFixed(2), bounds: WORLD,
         clock: g.clock.label, minutes: +g.clock.minutes.toFixed(1), phase: g.clock.phase,
+        lang: getLang(), waves: g.world.waves.running, waveStrength: +g.world.waves.strength.toFixed(2),
+        waveHeight: +g.world.surfaceOffset(g.player.pos.x, g.player.pos.z).toFixed(2),
+        area: g.hud.areaName,
         unlocked: [...g.ach.unlocked], visited: [...g.ach.visited], stars: g.ach.unlocked.size,
         npcs: g.npcs.npcs.map((n) => n.state),
       }),
@@ -445,6 +460,7 @@ export class Game {
       look: (yaw: number, pitch = 0.3) => { g.cam.yaw = yaw; g.cam.pitch = pitch; g.cam.snap(); },
       outfits: OUTFITS.length,
       setClock: (minutes: number) => { g.clock.load(minutes); g.hud.setClock(g.clock.label); },
+      startWaves: () => g.world.waves.start(),
     };
   }
 }

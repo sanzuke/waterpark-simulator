@@ -177,7 +177,7 @@ export class Player {
         this.mode = "ground"; this.grounded = false; this.vy = PLAYER.jumpSpeed * 1.25; // clears the surface so the hop is visible
         fx.splash(this.pos.x, WORLD.waterY, this.pos.z, 0.6);
       } else {
-        const bob = Math.sin(world.time * 2.2) * 0.03;
+        const bob = Math.sin(world.time * 2.2) * 0.03 + world.surfaceOffset(this.pos.x, this.pos.z);
         const target = s2.surfaceY - PLAYER.swimBodyOffset + bob;
         this.pos.y += (target - this.pos.y) * Math.min(1, 7 * dt);
         this.idleSwim = this.speed < 0.3 ? this.idleSwim + dt : 0;

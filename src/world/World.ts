@@ -11,6 +11,7 @@ import type { Seat } from "../interaction/types";
 import { buildEntrance, buildFoodCourt, buildLifeguards, buildPreparation } from "./buildings";
 import { buildSlides } from "./slides";
 import { buildPlayground } from "./playground";
+import { WavePool, buildWavePool } from "./waves";
 import { buildBackdrop, buildScenery } from "./scenery";
 import type { Interactable } from "../interaction/types";
 
@@ -50,10 +51,12 @@ export class World {
   readonly seats: Seat[] = [];
   readonly staff: StaffMember[] = [];
   slides: SlideDef[] = [];
+  readonly waves: WavePool;
   bucket!: BucketApi;
   /** Hooks the game sets so world events can reach sound, HUD and NPCs. */
   onBucketTip: () => void = () => {};
   onBucketHit: (x: number, z: number) => void = () => {};
+  onWaveStart: () => void = () => {};
   private gate = { rect: { minX: 0, maxX: 0, minZ: 0, maxZ: 0 }, rail: null as THREE.Object3D | null };
   gateOpen = false;
   private rings: THREE.Mesh[] = [];
@@ -67,6 +70,8 @@ export class World {
     this.effects = new Effects((x, z) => this.groundHeight(x, z));
     const group = new THREE.Group();
     this.scene.add(group);
+    this.waves = new WavePool(WATER_BODIES.find((w) => w.id === "wave")!.bounds, group);
+    this.waves.hooks.onStart = () => this.onWaveStart();
     const batch = new Batch();
     const ctx: BuildContext = {
       batch, group, solids: this.solids, circles: this.circles, interactables: this.interactables,
@@ -101,6 +106,7 @@ export class World {
     buildFoodCourt(ctx);
     this.slides = buildSlides(ctx);
     this.bucket = buildPlayground(ctx, this.effects, { onTip: () => this.onBucketTip(), onHit: (x, z) => this.onBucketHit(x, z) });
+    buildWavePool(ctx, this.waves);
     this.buildRings();
     buildLifeguards(ctx);
     buildScenery(ctx);
@@ -148,10 +154,21 @@ export class World {
 
   staffById(id: string) { return this.staff.find((m) => m.id === id); }
 
+  /** Wave height (metres) added to the surface, only inside the wave pool. */
+  surfaceOffset(x: number, z: number) {
+    return this.bodyAt(x, z)?.id === "wave" ? this.waves.height(x, z) : 0;
+  }
+
   /** Lazy-river current (m/s) at a point; zero elsewhere. Flows clockwise around the island. */
   flowAt(x: number, z: number, out = { x: 0, z: 0 }) {
     out.x = out.z = 0;
-    if (this.bodyAt(x, z)?.id !== "lazy" || this.groundHeight(x, z) > -0.45) return out;
+    const body = this.bodyAt(x, z);
+    if (body?.id === "wave") {
+      // Waves shove swimmers toward the sandy beach.
+      if (this.groundHeight(x, z) < -0.45) out.z = this.waves.push(x, z);
+      return out;
+    }
+    if (body?.id !== "lazy" || this.groundHeight(x, z) > -0.45) return out;
     const dx = x - 30, dz = z + 6;
     const speed = 1.5;
     if (Math.abs(dx) / 18 > Math.abs(dz) / 14) out.z = dx > 0 ? speed : -speed;
@@ -215,6 +232,7 @@ export class World {
 
   update(dt: number, player: { x: number; z: number; speed: number; swimming: boolean }) {
     this.updateStaff(dt, player);
+    this.waves.update(dt);
     this.time += dt;
     updateWater(this.time);
     for (const a of this.animated) a(dt, this.time);
