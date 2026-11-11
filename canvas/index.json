@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "boards": [
+    {
+      "id": "bd4c83cb-08e0-47cc-9644-7741ac40646f",
+      "name": "Untitled"
+    }
+  ],
+  "documents": [
+    {
+      "id": "main-design",
+      "title": "Kids Waterpark \u2014 Main Design"
+    }
+  ],
+  "mainDocumentId": "main-design"
+}

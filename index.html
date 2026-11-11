@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Kids Waterpark Simulator</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="hud">
+    <div id="area" class="pill"></div>
+    <div id="stats">
+      <div class="stat" id="coin-box"><span class="ico">🪙</span><b id="coins">150</b></div>
+      <div class="stat" id="energy-box"><span class="ico">⚡</span><div class="bar"><i id="energy-fill"></i></div><b id="energy-num">100</b></div>
+      <div id="energy-name">Full of energy</div>
+      <div class="stat" id="clock-box"><span class="ico">🕒</span><b id="clock-text">08:00</b></div>
+      <div class="stat" id="star-box"><span class="ico">⭐</span><b id="stars">0</b><small id="stars-total"></small></div>
+    </div>
+    <div id="top-right">
+      <canvas id="minimap" width="168" height="165"></canvas>
+      <button id="btn-pause" class="round" aria-label="Pause">II</button>
+    </div>
+    <div id="toast"></div>
+    <button id="prompt" class="big-btn" hidden><kbd>E</kbd><span id="prompt-text"></span></button>
+    <div id="hint">WASD move · Shift run · Space jump · E interact · drag to look</div>
+    <div id="touch">
+      <div id="joy"><div id="knob"></div></div>
+      <button id="btn-jump" class="round big" aria-label="Jump">⤒</button>
+      <button id="btn-act" class="round big act" hidden aria-label="Action"><span id="act-text"></span></button>
+    </div>
+  </div>
+
+  <section id="start" class="overlay">
+    <div class="card">
+      <h1>Kids <span>Waterpark</span></h1>
+      <p class="sub">Splash, swim and explore the park!</p>
+      <ul>
+        <li><b>Move</b> WASD / arrows · joystick</li>
+        <li><b>Run</b> Shift</li>
+        <li><b>Jump</b> Space · jump button</li>
+        <li><b>Interact</b> E · action button</li>
+        <li><b>Look</b> drag with mouse or finger</li>
+      </ul>
+      <button id="btn-continue" class="big-btn go" hidden>Continue</button>
+      <button id="btn-start" class="big-btn go">New game</button>
+      <p class="fine">Your game saves by itself.</p>
+    </div>
+  </section>
+
+  <section id="menu" class="overlay" hidden>
+    <div class="card wide">
+      <h2 id="menu-title"></h2>
+      <p class="sub" id="menu-sub"></p>
+      <div id="menu-items"></div>
+      <p id="menu-msg" class="msg"></p>
+      <div class="menu-foot"><span class="stat"><span class="ico">🪙</span><b id="menu-coins"></b></span><button id="btn-menu-close" class="big-btn go">Close</button></div>
+    </div>
+  </section>
+
+  <section id="summary" class="overlay" hidden>
+    <div class="card">
+      <h2>What a day!</h2>
+      <p class="sub">Here is what you did at the waterpark.</p>
+      <ul id="summary-list"></ul>
+      <button id="btn-stay" class="big-btn go">Keep playing</button>
+      <button id="btn-home" class="big-btn">Go home</button>
+    </div>
+  </section>
+
+  <section id="pause" class="overlay" hidden>
+    <div class="card">
+      <h2>Paused</h2>
+      <p class="sub">Take a break. The pool will wait for you.</p>
+      <button id="btn-resume" class="big-btn go">Keep playing</button>
+      <h3 class="sub">Stickers</h3>
+      <ul id="ach-list" class="ach"></ul>
+    </div>
+  </section>
+
+  <section id="info" class="overlay" hidden>
+    <div class="card wide">
+      <h2>Waterpark Guide</h2>
+      <div class="grid">
+        <div><b>Family Pool</b><br>Shallow beach entry, deep end past the buoys. Chase the beach ball!</div>
+        <div><b>Children's Pool</b><br>Warm, shallow and splashy.</div>
+        <div><b>Splash Playground</b><br>Start the fountains and run through them.</div>
+        <div><b>Lazy River</b><br>A big loop around the palm island.</div>
+        <div><b>Water Slides</b><br>Four slides up north.</div>
+        <div><b>Food Court</b><br>Sit at a table with friends.</div>
+      </div>
+      <p class="sub">Lifeguards are always watching the water. Have fun!</p>
+      <button id="btn-info-close" class="big-btn go">Got it</button>
+    </div>
+  </section>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

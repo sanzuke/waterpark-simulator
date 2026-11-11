@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "nodes": [
+    {
+      "id": "doc-main",
+      "type": "document",
+      "data": {
+        "documentId": "main-design"
+      },
+      "title": "Main design"
+    }
+  ],
+  "edges": [],
+  "id": "bd4c83cb-08e0-47cc-9644-7741ac40646f"
+}

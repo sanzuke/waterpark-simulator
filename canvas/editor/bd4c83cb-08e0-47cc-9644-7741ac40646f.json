@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "nodes": {
+    "doc-main": {
+      "x": 96,
+      "y": 96
+    }
+  },
+  "viewport": {
+    "x": -21,
+    "y": 20.5,
+    "zoom": 1
+  },
+  "view": "canvas"
+}
